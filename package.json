@@ -1,0 +1,14 @@
+{
+  "name": "jsgui2-essentials",
+  "main": "essentials.js",
+  "license" : "MIT",
+  "engines" : { "node" : ">=6.5.0" },
+  "description": "jsgui2 ES6 small library that provides core functionality.",
+  "author": "James Vickers <james@metabench.com>",
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/metabench/jsgui2-essentials.git"
+  },
+  "version": "0.0.1"
+
+}
