@@ -74,25 +74,6 @@ var is_dom_node = function isDomNode(obj) {
 };
 
 
-jq_class2type["[object Boolean]"] = "boolean";
-jq_class2type["[object Number]"] = "number";
-jq_class2type["[object String]"] = "string";
-jq_class2type["[object Function]"] = "function";
-jq_class2type["[object Array]"] = "array";
-jq_class2type["[object Date]"] = "date";
-jq_class2type["[object RegExp]"] = "regexp";
-jq_class2type["[object Object]"] = "object";
-
-
-var jq_isFunction = function(obj) {
-	return jq_type(obj) === "function";
-};
-
-var jq_isWindow = function(obj) {
-	return obj && typeof obj === "object" && "setInterval" in obj;
-};
-
-var hasOwn = Object.prototype.hasOwnProperty;
 
 var get_truth_map_from_arr = function(arr) {
 	var res = {};
@@ -118,27 +99,7 @@ var get_map_from_arr = function(arr) {
 //var arrSliceCall = Array.prototype.slice.call;
 
 var arr_like_to_arr = function(arr_like) {
-	// like an arguments list
-	// is this working in Safari?
-
-	//var res = [];
-	//return arrSliceCall(arr_like, 0);
-
-
-	//return Array.prototype.slice(arr_like);
-	// May have better way of doing this.
-
-
-
 	var res = new Array(arr_like.length);
-
-
-	// This was not working in Safari! Worked in Chrome. Probably
-	// (mis?)recognised it as an object.
-	// each(arr_like, function(i, v) {
-	// res.push(v);
-	// });
-
 	for (var c = 0, l = arr_like.length; c < l; c++) {
 		//res.push(arr_like[c]);
 		res[c] = arr_like[c];
@@ -153,7 +114,9 @@ var arr_like_to_arr = function(arr_like) {
 //  That would be jsgui-lang-html has the check for is control.
 
 var is_ctrl = function(obj) {
-	return (typeof obj != 'undefined' && obj != null && is_defined(obj._) && is_defined(obj.__type_name));
+
+	// something indicating all controls are controls?
+	return (typeof obj != 'undefined' && obj != null && is_defined(obj.__type_name) && is_defined(obj.content) && is_defined(obj.dom));
 };
 
 
@@ -1618,19 +1581,54 @@ var sig_match = function(sig1, sig2) {
 
 }
 
+var remove_sig_from_arr_shell = function(sig) {
+	// first and last characters?
+	// use regex then regex to extract the middle?
+
+	if (sig[0] == '[' && sig[sig.length - 1] == ']') {
+		return sig.substring(1, sig.length - 1);
+	}
+	return sig;
+	// but also do this to the arguments?
+};
+
+
+var str_arr_mapify = function(fn) {
+	var res = fp(function(a, sig) {
+		if (a.l == 1) {
+			if (sig == '[s]') {
+				var s_pn = a[0].split(' ');
+				// console.log('s_pn ' + s_pn.length);
+
+				if (s_pn.length > 1) {
+					return res.call(this, s_pn);
+				} else {
+					return fn.call(this, a[0]);
+				}
+			}
+
+			if (tof(a[0]) == 'array') {
+				var res2 = {}, that = this;
+
+				each(a[0], function(i, v) {
+					res2[v] = fn.call(that, v);
+				});
+				return res2;
+			}
+		}
+	});
+	return res;
+};
 
 // will put functions into the jsgui object.
 
 // with the functions listed like this it will be easier to document them.
 
 var jsgui = {
-	'Class' : Class,
 	'each' : each,
-	'eac': eac,
 	'is_array' : is_array,
 	'is_dom_node' : is_dom_node,
 	'is_ctrl' : is_ctrl,
-	'extend' : extend,
 	'clone' : clone,
 	'get_truth_map_from_arr' : get_truth_map_from_arr,
 	'arr_trim_undefined': arr_trim_undefined,
@@ -1644,6 +1642,7 @@ var jsgui = {
 	'fp' : fp,
 	'arrayify' : arrayify,
 	'mapify' : mapify,
+	'str_arr_mapify': str_arr_mapify,
 	'are_equal' : are_equal,
 	'get_a_sig': get_a_sig,
 	'get_item_sig' : get_item_sig,
@@ -1653,7 +1652,6 @@ var jsgui = {
 	'll_set': ll_set,
 	'll_get': ll_get,
 	'iterate_ancestor_classes': iterate_ancestor_classes,
-	'is_constructor_fn': is_constructor_fn,
 	'is_arr_of_t': is_arr_of_t,
 	'is_arr_of_arrs': is_arr_of_arrs,
 	'is_arr_of_strs': is_arr_of_strs,
@@ -1664,7 +1662,8 @@ var jsgui = {
 	'multi': call_multi,
 	'native_constructor_tof': native_constructor_tof,
 	'Fns': Fns,
-	'sig_match': sig_match
+	'sig_match': sig_match,
+	'remove_sig_from_arr_shell': remove_sig_from_arr_shell
 };
 
 
