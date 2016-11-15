@@ -24,7 +24,7 @@ var each = (collection, fn, context) => {
 		var ctu = true;
 		var stop = function() {
 			ctu = false;
-		}
+		};
 
 		if (is_array(collection)) {
 			var res = [], res_item;
@@ -77,7 +77,7 @@ var is_dom_node = function isDomNode(obj) {
 
 var get_truth_map_from_arr = function(arr) {
 	var res = {};
-	each(arr, function(i, v) {
+	each(arr, function(v, i) {
 		res[v] = true;
 	});
 	return res;
@@ -90,7 +90,7 @@ var get_map_from_arr = function(arr) {
 	for (var c = 0, l = arr.length; c < l; c++) {
 		res[arr[c]] = c;
 	}
-	//each(arr, function(i, v) {
+	//each(arr, function(v, i) {
 	//	res[v] = i;
 	//});
 	return res;
@@ -198,14 +198,13 @@ var tof = (obj, t1) => {
 var atof = (arr) => {
 
 	var res = new Array(arr.length);
-	//each(arr, function(i, v) {
+	//each(arr, function(v, i) {
 	//	res.push(tof(v));
 	//});
 	for (var c = 0, l = arr.length; c < l; c++) {
 		//res.push(tof(arr[c]));
 		res[c] = tof(arr[c]);
 	}
-
 	return res;
 };
 
@@ -602,7 +601,7 @@ var arrayify = fp(function(a, sig) {
 
 					var fns = [];
 
-					each(a[param_index], function(i, v) {
+					each(a[param_index], function(v, i) {
 						var new_params = a.slice(0, a.length - 1);
 						new_params[param_index] = v;
 						// the rest of the parameters as normal
@@ -668,7 +667,7 @@ var arrayify = fp(function(a, sig) {
 					}
 
 					/*
-					 each(a[param_index], function(i, v) {
+					 each(a[param_index], function(v, i) {
 					 //var new_params = a;
 					 a[param_index] = v;
 					 // the rest of the parameters as normal
@@ -694,8 +693,8 @@ var arrayify = fp(function(a, sig) {
 
 	if (sig == '[o]') {
 		var res = [];
-		each(a[0], function(i, v) {
-			res.push([i, v]);
+		each(a[0], function(v, i) {
+			res.push([v, i]);
 		});
 	} else if (sig == '[f]') {
 		param_index = 0, fn = a[0];
@@ -730,8 +729,8 @@ var mapify = (target) => {
 			if (sig == '[o]') {
 				var map = a[0];
 				each(map, function(v, i) {
-					//fn.call(that, i, v);
-					target.call(that, i, v);
+					//fn.call(that, v, i);
+					target.call(that, v, i);
 				});
 			} else if (sig == '[o,f]') {
 				var map = a[0];
@@ -739,7 +738,7 @@ var mapify = (target) => {
 				var callback = a[1];
 				var fns = [];
 				each(map, function(v, i) {
-					fns.push([target, [i, v]]);
+					fns.push([target, [v, i]]);
 				});
 				call_multi(fns, function(err_multi, res_multi) {
 					if (err_multi) {
@@ -780,11 +779,11 @@ var mapify = (target) => {
 		if (arguments.length == 1) {
 
 			if (is_arr_of_strs(target)) {
-				each(target, function(i, v) {
+				each(target, function(v, i) {
 					res[v] = true;
 				});
 			} else {
-				each(target, function(i, v) {
+				each(target, function(v, i) {
 					res[v[0]] = v[1];
 				});
 			}
@@ -794,7 +793,7 @@ var mapify = (target) => {
 
 		} else {
 			var by_property_name = arguments[1];
-			each(target, function(i, v) {
+			each(target, function(v, i) {
 				res[v[by_property_name]] = v;
 			});
 		}
@@ -824,7 +823,7 @@ var clone = fp((a, sig) => {
 			var res = [];
 
 
-			eac(obj, function(v) {
+			each(obj, function(v) {
 				//console.log('i ' + i);
 				res.push(clone(v));
 			});
@@ -855,12 +854,12 @@ var clone = fp((a, sig) => {
 			// extend not cloning the undefined values in the array properly,
 			// don't want them trimmed.
 
-			return extend(true, {}, obj);
+			return Object.assign({}, obj);
 		}
 
 	} else if (a.l == 2 && tof(a[1]) == 'number') {
 		var res = [];
-		for ( var c = 0; c < a[1]; c++) {
+		for (var c = 0; c < a[1]; c++) {
 			res.push(clone(obj));
 		}
 		return res;
@@ -870,14 +869,17 @@ var clone = fp((a, sig) => {
 
 });
 
+/*
+
 var are_equal = () => {
 	var a = arguments;
-	if (a.length == 0)
+	console.log('a.length ' + a.length);
+	if (a.length === 0)
 		return null;
-	if (a.length == 1) {
+	if (a.length === 1) {
 		var t = jsgui.tof(a[0]);
 		if (t == 'array' && a[0].length > 1) {
-			for ( var c = 1, l = a[0].length; c < l; c++) {
+			for (var c = 1, l = a[0].length; c < l; c++) {
 				if (!jsgui.are_equal(a[0][0], a[0][c]))
 					return false;
 			}
@@ -885,7 +887,7 @@ var are_equal = () => {
 			return true;
 		}
 	}
-	if (a.length == 2) {
+	if (a.length === 2) {
 		var ts = jsgui.atof(a);
 		if (ts[0] != ts[1])
 			return false;
@@ -895,7 +897,7 @@ var are_equal = () => {
 		if (t == 'array') {
 			if (a[0].length != a[1].length)
 				return false;
-			for ( var c = 0, l = a[0].length; c < l; c++) {
+			for (var c = 0, l = a[0].length; c < l; c++) {
 				if (!jsgui.are_equal(a[0][c], a[1][c]))
 					return false;
 			}
@@ -905,19 +907,19 @@ var are_equal = () => {
 			// the keys), get merged key map
 			var merged_key_truth_map = {};
 			var c1 = 0;
-			each(a[0], function (i, v) {
+			each(a[0], function (v, i) {
 				merged_key_truth_map[i] = true;
 				c1++;
 			});
 			var c2 = 0;
-			each(a[1], function (i, v) {
+			each(a[1], function (v, i) {
 				merged_key_truth_map[i] = true;
 				c2++;
 			});
 			if (c1 != c2)
 				return false;
 			var objects_are_equal = true;
-			each(merged_key_truth_map, function (i, v) {
+			each(merged_key_truth_map, function (v, i) {
 				if (!jsgui.are_equal(a[0][i], a[1][i])) {
 					objects_are_equal = false;
 					return;
@@ -929,11 +931,13 @@ var are_equal = () => {
 		}
 	}
 	if (a.length > 2) {
-		var ts = jsgui.atof(a);
-		if (!jsgui.are_equal(ts))
-			return false;
+		// Commented this out to remove infinite loop.
+
+		//var ts = jsgui.atof(a);
+		//if (!jsgui.are_equal(ts))
+		//	return false;
 		var o = a[0];
-		for ( var c = 1, l = a.length; c < l; c++) {
+		for (var c = 1, l = a.length; c < l; c++) {
 			if (a[c] !== o)
 				return false;
 		}
@@ -941,9 +945,12 @@ var are_equal = () => {
 	return true;
 };
 
+*/
+
+var are_equal = require('deep-equal');
 
 var set_vals = function(obj, map) {
-	each(map, function(i, v) {
+	each(map, function(v, i) {
 		obj[i] = v;
 	});
 };
@@ -1073,8 +1080,6 @@ var iterate_ancestor_classes = function(obj, callback) {
 	if (obj._superclass && ctu) {
 		iterate_ancestor_classes(obj._superclass, callback);
 	}
-
-
 }
 
 
@@ -1084,7 +1089,7 @@ var is_arr_of_t = function(obj, type_name) {
 	if (t == 'array') {
 		var res = true;
 
-		each(obj, function(i, v) {
+		each(obj, function(v, i) {
 			//console.log('2) v ' + stringify(v));
 			tv = tof(v);
 			//console.log('tv ' + tv);
@@ -1276,8 +1281,6 @@ var call_multiple_callback_functions = fp(function(a, sig) {
 				fn = pair;
 				params = [];
 			} else {
-
-
 				if (pair) {
 					if (pair.length == 1) {
 
@@ -1308,14 +1311,14 @@ var call_multiple_callback_functions = fp(function(a, sig) {
 						// [fn, params, fn_callback]
 						// [context, fn, params]
 
-						if (tof(pair[0]) == 'function' && tof(pair[1]) == 'array' && tof(pair[2]) == 'function') {
+						if (tof(pair[0]) === 'function' && tof(pair[1]) === 'array' && tof(pair[2]) === 'function') {
 							fn = pair[0];
 							params = pair[1];
 							fn_callback = pair[2];
 						}
 						// object / data_object?
 						// ?, function, array
-						if (tof(pair[1]) == 'function' && tof(pair[2]) == 'array') {
+						if (tof(pair[1]) === 'function' && tof(pair[2]) === 'array') {
 							//console.log('has context');
 							context = pair[0];
 							fn = pair[1];
@@ -1414,7 +1417,17 @@ var call_multiple_callback_functions = fp(function(a, sig) {
 			};
 			// Clone the params?
 			//  Really not sure about that.
-			var arr_to_call = clone(params) || [];
+
+
+			//  Seems like cloning / stabilising params should be done in a different closure.
+			//   This is now messing up typed arrays.
+			//   Seems unintuitive too. Wrong assumption to clone params. Could make it an option.
+
+			//var arr_to_call = clone(params) || [];
+
+			var arr_to_call = params || [];
+
+
 			//var arr_to_call = (params) || [];
 			//console.log('params', params);
 			//console.log('arr_to_call', arr_to_call);
@@ -1571,14 +1584,7 @@ var sig_match = function(sig1, sig2) {
 	} else {
 		return false;
 	}
-
 	//throw 'stop';
-
-
-
-
-
-
 }
 
 var remove_sig_from_arr_shell = function(sig) {
@@ -1610,7 +1616,7 @@ var str_arr_mapify = function(fn) {
 			if (tof(a[0]) == 'array') {
 				var res2 = {}, that = this;
 
-				each(a[0], function(i, v) {
+				each(a[0], function(v, i) {
 					res2[v] = fn.call(that, v);
 				});
 				return res2;
